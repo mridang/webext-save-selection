@@ -51,6 +51,7 @@ export const downloadFile = async (
 
 export const handleContextMenuClick = async (
   info: ContextMenuInfo,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _tab?: Tab,
 ): Promise<void> => {
   if (info.menuItemId !== MENU_ID) {
