@@ -7,31 +7,32 @@ export default {
     [
       '@semantic-release/exec',
       {
-        prepareCmd: 'npm run build',
+        prepareCmd: [
+          'jq --arg v "${nextRelease.version}" \'.version = $v\' package.json > package.json.tmp',
+          'mv package.json.tmp package.json',
+          'jq --arg v "${nextRelease.version}" \'.version = $v\' manifest.json > manifest.json.tmp',
+          'mv manifest.json.tmp manifest.json',
+          'npm run build',
+        ].join(' && '),
       },
     ],
-    [
-      'semantic-release-chrome',
-      {
-        asset: 'dist/extension.zip',
-        extensionId: '${CHROME_EXTENSION_ID}',
-      },
-    ],
+    // [
+    //   'semantic-release-chrome',
+    //   {
+    //     asset: 'dist/extension.zip',
+    //     extensionId: '${CHROME_EXTENSION_ID}',
+    //   },
+    // ],
     [
       '@semantic-release/github',
       {
-        assets: ['dist/**'],
+        assets: ['dist/extension.zip'],
       },
     ],
     [
       '@semantic-release/git',
       {
-        assets: [
-          'CHANGELOG.md',
-          'package.json',
-          'package-lock.json',
-          'manifest.json',
-        ],
+        assets: ['package.json', 'manifest.json'],
         message:
           'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
       },
