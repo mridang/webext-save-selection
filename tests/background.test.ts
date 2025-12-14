@@ -3,7 +3,6 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
   formatTimestamp,
   createFilename,
-  createTextBlob,
   downloadFile,
   handleContextMenuClick,
   initializeContextMenu,
@@ -47,13 +46,13 @@ describe('formatTimestamp', () => {
 
 describe('createFilename', () => {
   it('should create valid filename with prefix and timestamp', () => {
-    const prefix = 'selection-1-';
+    const prefix = 'selection-';
     const timestamp = '2024-01-15T10-30-45-123Z';
     const result = createFilename(prefix, timestamp);
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.value).toBe('selection-1-2024-01-15T10-30-45-123Z.txt');
+      expect(result.value).toBe('selection-2024-01-15T10-30-45-123Z.txt');
     }
   });
 
@@ -61,24 +60,6 @@ describe('createFilename', () => {
     const result = createFilename('test<', 'timestamp');
 
     expect(result.success).toBe(false);
-  });
-});
-
-describe('createTextBlob', () => {
-  it('should create a blob with text content', () => {
-    const text = 'Hello World';
-    const blob = createTextBlob(text);
-
-    expect(blob.type).toBe('text/plain');
-    expect(blob.size).toBeGreaterThan(0);
-  });
-
-  it('should handle unicode text', () => {
-    const text = 'Hello 世界 🌍';
-    const blob = createTextBlob(text);
-
-    expect(blob.type).toBe('text/plain');
-    expect(blob.size).toBeGreaterThan(text.length);
   });
 });
 
@@ -90,8 +71,7 @@ describe('downloadFile', () => {
   it('should return success result on successful download', async () => {
     downloadsDownloadMock.mockResolvedValue(123);
 
-    const blob = new Blob(['test'], { type: 'text/plain' });
-    const result = await downloadFile(blob, 'test.txt');
+    const result = await downloadFile('test', 'test.txt');
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -102,8 +82,7 @@ describe('downloadFile', () => {
   it('should return error result on download failure', async () => {
     downloadsDownloadMock.mockRejectedValue(new Error('Download failed'));
 
-    const blob = new Blob(['test'], { type: 'text/plain' });
-    const result = await downloadFile(blob, 'test.txt');
+    const result = await downloadFile('test', 'test.txt');
 
     expect(result.success).toBe(false);
     if (!result.success) {

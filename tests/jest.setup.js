@@ -31,6 +31,25 @@ globalThis.Blob = class Blob {
   }
 };
 
+globalThis.FileReader = class FileReader {
+  constructor() {
+    this.onloadend = null;
+    // noinspection JSUnusedGlobalSymbols
+    this.onerror = null;
+    this.result = null;
+  }
+
+  // noinspection JSUnusedGlobalSymbols
+  readAsDataURL() {
+    setTimeout(() => {
+      this.result = 'data:text/plain;base64,dGVzdA==';
+      if (this.onloadend) {
+        this.onloadend();
+      }
+    }, 0);
+  }
+};
+
 globalThis.URL = {
   createObjectURL: jest.fn(() => 'blob:test'),
   revokeObjectURL: jest.fn(),

@@ -9,33 +9,62 @@ import {
 } from './constants.js';
 import { validateSelectionText, validateFilename } from './validation.js';
 
-export const formatTimestamp = (date: Date): string => {
+/**
+ * Formats a Date into a filesystem-safe timestamp string by replacing
+ * colons and periods with hyphens.
+ *
+ * @param date - The date to format
+ * @returns ISO 8601 string with special chars replaced
+ */
+export function formatTimestamp(date: Date): string {
   return date.toISOString().replace(/[:.]/g, '-');
-};
+}
 
-export const createFilename = (
+/**
+ * Creates a validated filename by combining prefix, timestamp, and
+ * extension, then checking for filesystem safety.
+ *
+ * @param prefix - Filename prefix (e.g., "selection-")
+ * @param timestamp - Formatted timestamp string
+ * @returns Result with filename or validation error
+ */
+export function createFilename(
   prefix: string,
   timestamp: string,
-): Result<string> => {
+): Result<string> {
   const filename = `${prefix}${timestamp}${FILE_EXTENSION}`;
   return validateFilename(filename);
-};
+}
 
-export const createTextBlob = (text: string): Blob => {
-  return new Blob([text], { type: MIME_TYPE });
-};
-
-export const downloadFile = async (
-  blob: Blob,
+/**
+ * Initiates a download via Chrome downloads API using data URL.
+ * Service workers don't support URL.createObjectURL, so we convert
+ * the blob to a data URL via FileReader.
+ *
+ * @param text - Text content to download
+ * @param filename - Name for the downloaded file
+ * @returns Result with download ID or error details
+ */
+export async function downloadFile(
+  text: string,
   filename: string,
-): Promise<Result<number>> => {
+): Promise<Result<number>> {
   try {
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([text], { type: MIME_TYPE });
+    const reader = new FileReader();
+
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
     const downloadId = await chrome.downloads.download({
-      url,
+      url: dataUrl,
       filename,
       saveAs: false,
     });
+
     return { success: true, value: downloadId };
   } catch (error) {
     return {
@@ -47,13 +76,20 @@ export const downloadFile = async (
       },
     };
   }
-};
+}
 
-export const handleContextMenuClick = async (
+/**
+ * Handles context menu click events. Validates selected text, creates
+ * a timestamped file, and downloads it. Logs errors but does not throw.
+ *
+ * @param info - Context menu click event data
+ * @param _tab - Tab where click occurred (unused)
+ */
+export async function handleContextMenuClick(
   info: ContextMenuInfo,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _tab?: Tab,
-): Promise<void> => {
+): Promise<void> {
   if (info.menuItemId !== MENU_ID) {
     return;
   }
@@ -66,7 +102,6 @@ export const handleContextMenuClick = async (
 
   const text = validationResult.value;
   const timestamp = formatTimestamp(new Date());
-
   const filenameResult = createFilename(FILE_PREFIX, timestamp);
 
   if (!filenameResult.success) {
@@ -74,15 +109,18 @@ export const handleContextMenuClick = async (
     return;
   }
 
-  const blob = createTextBlob(text);
-  const downloadResult = await downloadFile(blob, filenameResult.value);
+  const downloadResult = await downloadFile(text, filenameResult.value);
 
   if (!downloadResult.success) {
     console.error('Download failed:', downloadResult.error.message);
   }
-};
+}
 
-export const initializeContextMenu = (): void => {
+/**
+ * Initializes the extension's context menu. Creates a menu item that
+ * appears when text is selected. Logs errors without throwing.
+ */
+export function initializeContextMenu(): void {
   try {
     chrome.contextMenus.create({
       id: MENU_ID,
@@ -95,11 +133,9 @@ export const initializeContextMenu = (): void => {
       error instanceof Error ? error.message : 'Unknown error',
     );
   }
-};
-
-const handleContextMenuClickSync = (info: ContextMenuInfo, tab?: Tab): void => {
-  void handleContextMenuClick(info, tab);
-};
+}
 
 chrome.runtime.onInstalled.addListener(initializeContextMenu);
-chrome.contextMenus.onClicked.addListener(handleContextMenuClickSync);
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  void handleContextMenuClick(info, tab);
+});

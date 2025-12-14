@@ -54,6 +54,7 @@ export default {
         importHelpers: false,
         declaration: false,
         sourceMap: true,
+        lib: ['ES2022', 'WebWorker'],
       },
     }),
     terser({
