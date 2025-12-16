@@ -7,10 +7,7 @@
   "description": "Save selected text to two files via context menu",
   "author": "Mridang Agarwalla <mridang.agarwalla@gmail.com>",
   "homepage_url": "https://github.com/mridang/webext-save-selection",
-  "permissions": [
-    "contextMenus",
-    "downloads"
-  ],
+  "permissions": ["contextMenus", "downloads"],
   "background": {
     "service_worker": "background.js"
   },
