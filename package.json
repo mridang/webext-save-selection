@@ -1,6 +1,6 @@
 {
   "name": "text-saver-extension",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "description": "Chrome extension to save selected text to a file",
   "keywords": [
