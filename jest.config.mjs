@@ -34,4 +34,14 @@ export default {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      {
+        outputDirectory: './.out',
+        outputName: 'junit.xml',
+      },
+    ],
+  ],
 };
