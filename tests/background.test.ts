@@ -1,12 +1,70 @@
 /* global chrome */
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import {
+
+const mockChrome = {
+  runtime: {
+    onInstalled: {
+      addListener: jest.fn(),
+    },
+  },
+  contextMenus: {
+    create: jest.fn(),
+    onClicked: {
+      addListener: jest.fn(),
+    },
+  },
+  downloads: {
+    download: jest.fn(),
+  },
+};
+
+// @ts-expect-error - test global injection
+globalThis.chrome = mockChrome;
+
+// @ts-expect-error - test global injection
+globalThis.Blob = class Blob {
+  size: number;
+  type: string;
+  constructor(parts: unknown[], options?: { type?: string }) {
+    this.size = parts.reduce<number>((acc, part) => {
+      if (typeof part === 'string') {
+        return acc + new TextEncoder().encode(part).length;
+      }
+      return acc;
+    }, 0);
+    this.type = options?.type || '';
+  }
+};
+
+// @ts-expect-error - test global injection
+globalThis.FileReader = class FileReader {
+  onloadend: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  result: string | null = null;
+
+  readAsDataURL() {
+    setTimeout(() => {
+      this.result = 'data:text/plain;base64,dGVzdA==';
+      if (this.onloadend) {
+        this.onloadend();
+      }
+    }, 0);
+  }
+};
+
+// @ts-expect-error - test global injection
+globalThis.URL = {
+  createObjectURL: jest.fn(() => 'blob:test'),
+  revokeObjectURL: jest.fn(),
+};
+
+const {
   formatTimestamp,
   createFilename,
   downloadFile,
   handleContextMenuClick,
   initializeContextMenu,
-} from '../src/background.js';
+} = await import('../src/background.js');
 import type { ContextMenuInfo } from '../src/types.js';
 
 type DownloadsDownloadPromise = (
