@@ -3,7 +3,7 @@
   "manifest_version": 3,
   "name": "Text Saver",
   "short_name": "TextSaver",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Save selected text to two files via context menu",
   "author": "Mridang Agarwalla <mridang.agarwalla@gmail.com>",
   "homepage_url": "https://github.com/mridang/webext-save-selection",
