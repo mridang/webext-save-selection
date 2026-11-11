@@ -50,6 +50,10 @@ describe('validateSelectionText', () => {
   });
 });
 
+const oldPattern = new RegExp(
+  String.raw`[<>:"/\\|?*${String.fromCodePoint(0)}-${String.fromCodePoint(0x1f)}]`,
+);
+
 describe('validateFilename', () => {
   it('should accept valid filename', () => {
     const result = validateFilename('test.txt');
@@ -79,6 +83,29 @@ describe('validateFilename', () => {
         expect(result.error.type).toBe('INVALID_SELECTION');
       }
     });
+  });
+
+  it('should reject every control character and accept every other ASCII character the old pattern accepted', () => {
+    for (let code = 0; code < 592; code += 1) {
+      const filename = `a${String.fromCodePoint(code)}b`;
+      expect(validateFilename(filename).success).toBe(
+        !oldPattern.test(filename),
+      );
+    }
+  });
+
+  it('should answer like the old pattern on a long adversarial filename', () => {
+    const clean = 'a'.repeat(250);
+    for (const filename of [
+      clean,
+      `${clean}\u0001`,
+      `${clean}:`,
+      clean.replace(/a$/, '\n'),
+    ]) {
+      expect(validateFilename(filename).success).toBe(
+        !oldPattern.test(filename),
+      );
+    }
   });
 
   it('should reject empty filename', () => {

@@ -1,7 +1,7 @@
 /**
  * @file Background service worker that saves the selected text to a file.
  */
-import type { ContextMenuInfo, Tab, Result } from './types.js';
+import type { ContextMenuInfo, Result } from './types.js';
 import {
   MENU_ID,
   MENU_TITLE,
@@ -98,7 +98,6 @@ export async function downloadFile(
  * Handles context menu click events. Validates selected text, creates
  * a timestamped file, and downloads it. Logs errors but does not throw.
  * @param info - Context menu click event data.
- * @param _tab - Tab where click occurred (unused).
  * @example
  * ```ts
  * await handleContextMenuClick({
@@ -111,8 +110,6 @@ export async function downloadFile(
  */
 export async function handleContextMenuClick(
   info: ContextMenuInfo,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars -- _tab keeps the chrome listener signature
-  _tab?: Tab,
 ): Promise<void> {
   if (info.menuItemId !== MENU_ID) {
     return;
@@ -164,6 +161,6 @@ export function initializeContextMenu(): void {
 }
 
 chrome.runtime.onInstalled.addListener(initializeContextMenu);
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  void handleContextMenuClick(info, tab);
+chrome.contextMenus.onClicked.addListener((info) => {
+  void handleContextMenuClick(info);
 });

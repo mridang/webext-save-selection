@@ -41,10 +41,12 @@ export const validateSelectionText = (
 };
 
 export const validateFilename = (filename: string): Result<string> => {
-  // eslint-disable-next-line no-control-regex -- control characters must be rejected in filenames
-  const invalidChars = /[<>:"/\\|?*\u0000-\u001F]/g;
+  const invalidChars = /[<>:"/\\|?*]/;
+  const hasControlCharacter = [...filename].some(
+    (character) => (character.codePointAt(0) ?? 0) <= 0x1f,
+  );
 
-  if (invalidChars.test(filename)) {
+  if (invalidChars.test(filename) || hasControlCharacter) {
     return {
       success: false,
       error: {
