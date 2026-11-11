@@ -1,3 +1,7 @@
+/**
+ * @file Shared constants for menu identifiers, filenames and text length limits.
+ */
+
 export const MENU_ID = 'save-text' as const;
 
 export const MENU_TITLE = 'Save selected text' as const;

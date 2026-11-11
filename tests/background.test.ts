@@ -1,4 +1,6 @@
-/* global chrome */
+/**
+ * @file Unit tests for the background worker's download and context menu logic.
+ */
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
 const mockChrome = {
@@ -41,6 +43,10 @@ globalThis.FileReader = class FileReader {
   onloadend: (() => void) | null = null;
   onerror: (() => void) | null = null;
   result: string | null = null;
+
+  addEventListener() {
+    // The mock never fails, so error listeners are never invoked.
+  }
 
   readAsDataURL() {
     setTimeout(() => {
@@ -164,7 +170,7 @@ describe('handleContextMenuClick', () => {
       pageUrl: 'https://example.com',
     };
 
-    await handleContextMenuClick(info, undefined);
+    await handleContextMenuClick(info);
 
     expect(chrome.downloads.download).toHaveBeenCalledTimes(1);
   });
@@ -176,7 +182,7 @@ describe('handleContextMenuClick', () => {
       pageUrl: 'https://example.com',
     };
 
-    await handleContextMenuClick(info, undefined);
+    await handleContextMenuClick(info);
 
     expect(chrome.downloads.download).not.toHaveBeenCalled();
   });
@@ -189,7 +195,7 @@ describe('handleContextMenuClick', () => {
       pageUrl: 'https://example.com',
     };
 
-    await handleContextMenuClick(info, undefined);
+    await handleContextMenuClick(info);
 
     expect(chrome.downloads.download).not.toHaveBeenCalled();
   });
@@ -204,9 +210,7 @@ describe('handleContextMenuClick', () => {
       pageUrl: 'https://example.com',
     };
 
-    await expect(
-      handleContextMenuClick(info, undefined),
-    ).resolves.not.toThrow();
+    await expect(handleContextMenuClick(info)).resolves.not.toThrow();
   });
 });
 

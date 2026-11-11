@@ -1,3 +1,6 @@
+/**
+ * @file Unit tests for the selection and filename validation rules.
+ */
 import { describe, it, expect } from '@jest/globals';
 import { validateSelectionText, validateFilename } from '../src/validation.js';
 

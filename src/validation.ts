@@ -1,3 +1,6 @@
+/**
+ * @file Validation rules for selected text and generated download filenames.
+ */
 import { MAX_TEXT_LENGTH, MIN_TEXT_LENGTH } from './constants.js';
 import type { Result } from './types.js';
 
@@ -38,7 +41,7 @@ export const validateSelectionText = (
 };
 
 export const validateFilename = (filename: string): Result<string> => {
-  // eslint-disable-next-line no-control-regex
+  // eslint-disable-next-line no-control-regex -- control characters must be rejected in filenames
   const invalidChars = /[<>:"/\\|?*\u0000-\u001F]/g;
 
   if (invalidChars.test(filename)) {

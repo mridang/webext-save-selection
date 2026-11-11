@@ -1,4 +1,6 @@
-/* global chrome */
+/**
+ * @file Type aliases for Chrome context menu and tab payloads, and the result shape.
+ */
 
 export type ContextMenuInfo = chrome.contextMenus.OnClickData;
 
