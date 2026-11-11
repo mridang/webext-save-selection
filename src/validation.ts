@@ -39,7 +39,7 @@ export const validateSelectionText = (
 
 export const validateFilename = (filename: string): Result<string> => {
   // eslint-disable-next-line no-control-regex
-  const invalidChars = /[<>:"/\\|?*\x00-\x1F]/g;
+  const invalidChars = /[<>:"/\\|?*\u0000-\u001F]/g;
 
   if (invalidChars.test(filename)) {
     return {

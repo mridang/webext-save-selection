@@ -63,7 +63,7 @@ describe('validateFilename', () => {
       'test>.txt',
       'test".txt',
       'test/.txt',
-      'test\\.txt',
+      String.raw`test\.txt`,
       'test|.txt',
       'test?.txt',
       'test*.txt',
