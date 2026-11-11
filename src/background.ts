@@ -1,5 +1,7 @@
-/* global chrome */
-import type { ContextMenuInfo, Tab, Result } from './types.js';
+/**
+ * @file Background service worker that saves the selected text to a file.
+ */
+import type { ContextMenuInfo, Result } from './types.js';
 import {
   MENU_ID,
   MENU_TITLE,
@@ -12,21 +14,29 @@ import { validateSelectionText, validateFilename } from './validation.js';
 /**
  * Formats a Date into a filesystem-safe timestamp string by replacing
  * colons and periods with hyphens.
- *
- * @param date - The date to format
- * @returns ISO 8601 string with special chars replaced
+ * @param date - The date to format.
+ * @returns ISO 8601 string with special chars replaced.
+ * @example
+ * ```ts
+ * formatTimestamp(new Date('2024-01-15T10:30:45.123Z'));
+ * // => '2024-01-15T10-30-45-123Z'
+ * ```
  */
 export function formatTimestamp(date: Date): string {
-  return date.toISOString().replace(/[:.]/g, '-');
+  return date.toISOString().replaceAll(/[:.]/g, '-');
 }
 
 /**
  * Creates a validated filename by combining prefix, timestamp, and
  * extension, then checking for filesystem safety.
- *
- * @param prefix - Filename prefix (e.g., "selection-")
- * @param timestamp - Formatted timestamp string
- * @returns Result with filename or validation error
+ * @param prefix - Filename prefix (e.g., "selection-").
+ * @param timestamp - Formatted timestamp string.
+ * @returns Result with filename or validation error.
+ * @example
+ * ```ts
+ * createFilename('selection-', '2024-01-15T10-30-45-123Z');
+ * // => { success: true, value: 'selection-2024-01-15T10-30-45-123Z.txt' }
+ * ```
  */
 export function createFilename(
   prefix: string,
@@ -40,10 +50,16 @@ export function createFilename(
  * Initiates a download via Chrome downloads API using data URL.
  * Service workers don't support URL.createObjectURL, so we convert
  * the blob to a data URL via FileReader.
- *
- * @param text - Text content to download
- * @param filename - Name for the downloaded file
- * @returns Result with download ID or error details
+ * @param text - Text content to download.
+ * @param filename - Name for the downloaded file.
+ * @returns Result with download ID or error details.
+ * @example
+ * ```ts
+ * const result = await downloadFile('Hello World', 'selection.txt');
+ * if (result.success) {
+ *   console.log('Started download', result.value);
+ * }
+ * ```
  */
 export async function downloadFile(
   text: string,
@@ -55,7 +71,7 @@ export async function downloadFile(
 
     const dataUrl = await new Promise<string>((resolve, reject) => {
       reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
+      reader.addEventListener('error', reject);
       reader.readAsDataURL(blob);
     });
 
@@ -81,14 +97,19 @@ export async function downloadFile(
 /**
  * Handles context menu click events. Validates selected text, creates
  * a timestamped file, and downloads it. Logs errors but does not throw.
- *
- * @param info - Context menu click event data
- * @param _tab - Tab where click occurred (unused)
+ * @param info - Context menu click event data.
+ * @example
+ * ```ts
+ * await handleContextMenuClick({
+ *   menuItemId: 'save-text',
+ *   selectionText: 'Hello World',
+ *   editable: false,
+ *   pageUrl: 'https://example.com',
+ * });
+ * ```
  */
 export async function handleContextMenuClick(
   info: ContextMenuInfo,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _tab?: Tab,
 ): Promise<void> {
   if (info.menuItemId !== MENU_ID) {
     return;
@@ -119,6 +140,10 @@ export async function handleContextMenuClick(
 /**
  * Initializes the extension's context menu. Creates a menu item that
  * appears when text is selected. Logs errors without throwing.
+ * @example
+ * ```ts
+ * chrome.runtime.onInstalled.addListener(initializeContextMenu);
+ * ```
  */
 export function initializeContextMenu(): void {
   try {
@@ -136,6 +161,6 @@ export function initializeContextMenu(): void {
 }
 
 chrome.runtime.onInstalled.addListener(initializeContextMenu);
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  void handleContextMenuClick(info, tab);
+chrome.contextMenus.onClicked.addListener((info) => {
+  void handleContextMenuClick(info);
 });
