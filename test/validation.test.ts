@@ -4,6 +4,8 @@
 import { describe, it, expect } from '@jest/globals';
 import { validateSelectionText, validateFilename } from '../src/validation.js';
 
+const TRAILING_A_PATTERN = /a$/;
+
 describe('validateSelectionText', () => {
   it('should accept valid text', () => {
     const result = validateSelectionText('Hello World');
@@ -15,7 +17,7 @@ describe('validateSelectionText', () => {
   });
 
   it('should reject undefined text', () => {
-    const result = validateSelectionText(undefined);
+    const result = validateSelectionText(undefined as string | undefined);
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -76,13 +78,13 @@ describe('validateFilename', () => {
       'test*.txt',
     ];
 
-    invalidFilenames.forEach((filename) => {
+    for (const filename of invalidFilenames) {
       const result = validateFilename(filename);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.type).toBe('INVALID_SELECTION');
       }
-    });
+    }
   });
 
   it('should reject every control character and accept every other ASCII character the old pattern accepted', () => {
@@ -100,7 +102,7 @@ describe('validateFilename', () => {
       clean,
       `${clean}\u0001`,
       `${clean}:`,
-      clean.replace(/a$/, '\n'),
+      clean.replace(TRAILING_A_PATTERN, '\n'),
     ]) {
       expect(validateFilename(filename).success).toBe(
         !oldPattern.test(filename),
