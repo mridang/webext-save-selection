@@ -3,6 +3,8 @@
  */
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
+const TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/;
+
 const mockChrome = {
   runtime: {
     onInstalled: {
@@ -103,8 +105,8 @@ describe('formatTimestamp', () => {
     const result1 = formatTimestamp(date1);
     const result2 = formatTimestamp(date2);
 
-    expect(result1).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/);
-    expect(result2).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/);
+    expect(result1).toMatch(TIMESTAMP_PATTERN);
+    expect(result2).toMatch(TIMESTAMP_PATTERN);
   });
 });
 

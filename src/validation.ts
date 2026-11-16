@@ -4,6 +4,8 @@
 import { MAX_TEXT_LENGTH, MIN_TEXT_LENGTH } from './constants.js';
 import type { Result } from './types.js';
 
+const INVALID_FILENAME_CHARACTERS_PATTERN = /[<>:"/\\|?*]/;
+
 export const validateSelectionText = (
   text: string | undefined,
 ): Result<string> => {
@@ -41,7 +43,7 @@ export const validateSelectionText = (
 };
 
 export const validateFilename = (filename: string): Result<string> => {
-  const invalidChars = /[<>:"/\\|?*]/;
+  const invalidChars = INVALID_FILENAME_CHARACTERS_PATTERN;
   const hasControlCharacter = [...filename].some(
     (character) => (character.codePointAt(0) ?? 0) <= 0x1f,
   );
