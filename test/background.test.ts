@@ -76,10 +76,12 @@ const {
 import type { ContextMenuInfo } from '../src/types.js';
 
 type DownloadsDownloadPromise = (
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- the chrome namespace in @types/chrome is flagged as Chrome Apps platform, but extensions use it; the preset's allow entry does not cover namespace references
   options: chrome.downloads.DownloadOptions,
 ) => Promise<number>;
 
 type ContextMenusCreateFn = (
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- the chrome namespace in @types/chrome is flagged as Chrome Apps platform, but extensions use it; the preset's allow entry does not cover namespace references
   createProperties: chrome.contextMenus.CreateProperties,
   callback?: () => void,
 ) => string | number;

@@ -44,9 +44,13 @@ export const validateSelectionText = (
 
 export const validateFilename = (filename: string): Result<string> => {
   const invalidChars = INVALID_FILENAME_CHARACTERS_PATTERN;
-  const hasControlCharacter = [...filename].some(
-    (character) => (character.codePointAt(0) ?? 0) <= 0x1f,
-  );
+  let hasControlCharacter = false;
+  for (const character of filename) {
+    if ((character.codePointAt(0) ?? 0) <= 0x1f) {
+      hasControlCharacter = true;
+      break;
+    }
+  }
 
   if (invalidChars.test(filename) || hasControlCharacter) {
     return {
