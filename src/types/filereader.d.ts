@@ -11,9 +11,7 @@ declare global {
     result: string | ArrayBuffer | null;
   }
 
-  const FileReader: {
-    new (): FileReader;
-  };
+  const FileReader: new () => FileReader;
 }
 
 export {};
