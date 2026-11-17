@@ -3,7 +3,8 @@
  */
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
-const TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/;
+const TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/u;
+const FILENAME_PATTERN = /^selection-.*\.txt$/u;
 
 const mockChrome = {
   runtime: {
@@ -73,15 +74,12 @@ const {
   handleContextMenuClick,
   initializeContextMenu,
 } = await import('../src/background.js');
-import type { ContextMenuInfo } from '../src/types.js';
 
 type DownloadsDownloadPromise = (
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- the chrome namespace in @types/chrome is flagged as Chrome Apps platform, but extensions use it; the preset's allow entry does not cover namespace references
   options: chrome.downloads.DownloadOptions,
 ) => Promise<number>;
 
 type ContextMenusCreateFn = (
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- the chrome namespace in @types/chrome is flagged as Chrome Apps platform, but extensions use it; the preset's allow entry does not cover namespace references
   createProperties: chrome.contextMenus.CreateProperties,
   callback?: () => void,
 ) => string | number;
@@ -167,7 +165,7 @@ describe('handleContextMenuClick', () => {
   });
 
   it('should download one file when valid selection exists', async () => {
-    const info: ContextMenuInfo = {
+    const info: chrome.contextMenus.OnClickData = {
       menuItemId: 'save-text',
       selectionText: 'Hello World',
       editable: false,
@@ -176,11 +174,19 @@ describe('handleContextMenuClick', () => {
 
     await handleContextMenuClick(info);
 
-    expect(chrome.downloads.download).toHaveBeenCalledTimes(1);
+    expect(downloadsDownloadMock.mock.calls).toEqual([
+      [
+        {
+          url: 'data:text/plain;base64,dGVzdA==',
+          filename: expect.stringMatching(FILENAME_PATTERN),
+          saveAs: false,
+        },
+      ],
+    ]);
   });
 
   it('should not download if no selection text', async () => {
-    const info: ContextMenuInfo = {
+    const info: chrome.contextMenus.OnClickData = {
       menuItemId: 'save-text',
       editable: false,
       pageUrl: 'https://example.com',
@@ -188,11 +194,11 @@ describe('handleContextMenuClick', () => {
 
     await handleContextMenuClick(info);
 
-    expect(chrome.downloads.download).not.toHaveBeenCalled();
+    expect(downloadsDownloadMock.mock.calls).toEqual([]);
   });
 
   it('should not download if wrong menu item', async () => {
-    const info: ContextMenuInfo = {
+    const info: chrome.contextMenus.OnClickData = {
       menuItemId: 'other-menu',
       selectionText: 'Hello World',
       editable: false,
@@ -201,13 +207,13 @@ describe('handleContextMenuClick', () => {
 
     await handleContextMenuClick(info);
 
-    expect(chrome.downloads.download).not.toHaveBeenCalled();
+    expect(downloadsDownloadMock.mock.calls).toEqual([]);
   });
 
   it('should handle download failures gracefully', async () => {
     downloadsDownloadMock.mockRejectedValue(new Error('Network error'));
 
-    const info: ContextMenuInfo = {
+    const info: chrome.contextMenus.OnClickData = {
       menuItemId: 'save-text',
       selectionText: 'Test',
       editable: false,

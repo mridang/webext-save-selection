@@ -4,7 +4,7 @@
 import { describe, it, expect } from '@jest/globals';
 import { validateSelectionText, validateFilename } from '../src/validation.js';
 
-const TRAILING_A_PATTERN = /a$/;
+const TRAILING_A_PATTERN = /a$/u;
 
 describe('validateSelectionText', () => {
   it('should accept valid text', () => {
@@ -54,6 +54,7 @@ describe('validateSelectionText', () => {
 
 const oldPattern = new RegExp(
   String.raw`[<>:"/\\|?*${String.fromCodePoint(0)}-${String.fromCodePoint(0x1f)}]`,
+  'u',
 );
 
 describe('validateFilename', () => {

@@ -1,7 +1,7 @@
 /**
  * @file Background service worker that saves the selected text to a file.
  */
-import type { ContextMenuInfo, Result } from './types.js';
+/// <reference types="chrome" />
 import {
   MENU_ID,
   MENU_TITLE,
@@ -10,6 +10,7 @@ import {
   MIME_TYPE,
 } from './constants.js';
 import { validateSelectionText, validateFilename } from './validation.js';
+import type { Result } from './types.js';
 
 /**
  * Formats a Date into a filesystem-safe timestamp string by replacing
@@ -23,7 +24,7 @@ import { validateSelectionText, validateFilename } from './validation.js';
  * ```
  */
 export function formatTimestamp(date: Date): string {
-  return date.toISOString().replaceAll(/[:.]/g, '-');
+  return date.toISOString().replaceAll(/[:.]/gu, '-');
 }
 
 /**
@@ -70,6 +71,7 @@ export async function downloadFile(
     const reader = new FileReader();
 
     const dataUrl = await new Promise<string>((resolve, reject) => {
+      // eslint-disable-next-line functional/immutable-data -- FileReader reports completion through the onloadend property
       reader.onloadend = () => resolve(reader.result as string);
       reader.addEventListener('error', reject);
       reader.readAsDataURL(blob);
@@ -109,7 +111,7 @@ export async function downloadFile(
  * ```
  */
 export async function handleContextMenuClick(
-  info: ContextMenuInfo,
+  info: chrome.contextMenus.OnClickData,
 ): Promise<void> {
   if (info.menuItemId !== MENU_ID) {
     return;
