@@ -6,6 +6,19 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 const TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/u;
 const FILENAME_PATTERN = /^selection-.*\.txt$/u;
 
+type DownloadsDownloadPromise = (
+  options: chrome.downloads.DownloadOptions,
+) => Promise<number>;
+
+type ContextMenusCreateFn = (
+  createProperties: chrome.contextMenus.CreateProperties,
+  callback?: () => void,
+) => string | number;
+
+const downloadsDownloadMock = jest.fn<DownloadsDownloadPromise>();
+
+const contextMenusCreateMock = jest.fn<ContextMenusCreateFn>();
+
 const mockChrome = {
   runtime: {
     onInstalled: {
@@ -13,13 +26,13 @@ const mockChrome = {
     },
   },
   contextMenus: {
-    create: jest.fn(),
+    create: contextMenusCreateMock,
     onClicked: {
       addListener: jest.fn(),
     },
   },
   downloads: {
-    download: jest.fn(),
+    download: downloadsDownloadMock,
   },
 };
 
@@ -74,21 +87,6 @@ const {
   handleContextMenuClick,
   initializeContextMenu,
 } = await import('../src/background.js');
-
-type DownloadsDownloadPromise = (
-  options: chrome.downloads.DownloadOptions,
-) => Promise<number>;
-
-type ContextMenusCreateFn = (
-  createProperties: chrome.contextMenus.CreateProperties,
-  callback?: () => void,
-) => string | number;
-
-const downloadsDownloadMock = chrome.downloads
-  .download as unknown as jest.MockedFunction<DownloadsDownloadPromise>;
-
-const contextMenusCreateMock = chrome.contextMenus
-  .create as unknown as jest.MockedFunction<ContextMenusCreateFn>;
 
 describe('formatTimestamp', () => {
   it('should format date to ISO string with replaced colons and dots', () => {

@@ -72,7 +72,14 @@ export async function downloadFile(
 
     const dataUrl = await new Promise<string>((resolve, reject) => {
       // eslint-disable-next-line functional/immutable-data -- FileReader reports completion through the onloadend property
-      reader.onloadend = () => resolve(reader.result as string);
+      reader.onloadend = () => {
+        const { result } = reader;
+        if (typeof result === 'string') {
+          resolve(result);
+        } else {
+          reject(new TypeError('The file reader did not produce a data URL'));
+        }
+      };
       reader.addEventListener('error', reject);
       reader.readAsDataURL(blob);
     });
